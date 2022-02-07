@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_TASK_URL } from '../config/config';
 
 function NewItem({setTodos}){
     const [newTodo, setNewTodo] = useState("");
@@ -6,12 +7,27 @@ function NewItem({setTodos}){
     const handleSubmit = (event)=>{
         event.preventDefault();
         
-        setTodos(todos => [{title: newTodo, completed: false}, ...todos]);
+        const options = {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({title: newTodo})
+        };
 
-        setNewTodo("");
+        fetch(API_TASK_URL, options)
+        .then(response => response.json())
+        .then(data => {
+            if(data.ok) {
+                setTodos(todos => [...todos, data.task]);
+                setNewTodo("");
+            } else {
+                alert("No se ha podido crear la tarea: " + data.error.message);
+            }
+        });
     }
 
-    const handleNewTodo = (evento)=> setNewTodo(evento.target.value);
+    const handleNewTodo = event => setNewTodo(event.target.value);
 
     return(
         <form onSubmit={handleSubmit} className="form-group container">
